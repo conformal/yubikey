@@ -33,6 +33,42 @@ var aesEncodeTests = []struct {
 	},
 }
 
+var capslockTest = struct {
+	in  uint16
+	out uint16
+}{
+	33195,
+	32768,
+}
+
+var counterTest = struct {
+	in  uint16
+	out uint16
+}{
+	33195,
+	427,
+}
+
+var crcOkPTests = []struct {
+	in  []byte
+	out bool
+}{
+	{
+		[]byte{
+			0x87, 0x92, 0xeb, 0xfe, 0x26, 0xcc, 0x13, 0x00,
+			0xa8, 0xc0, 0x00, 0x10, 0xb4, 0x08, 0x6f, 0x5b,
+		},
+		true,
+	},
+	{
+		[]byte{
+			0x87, 0x92, 0xeb, 0xfe, 0x26, 0xcc, 0x13, 0x00,
+			0xa8, 0xc1, 0x00, 0x10, 0xb4, 0x08, 0x6f, 0x5b,
+		},
+		false,
+	},
+}
+
 var crcTests = []struct {
 	in  string
 	out uint16
@@ -52,6 +88,7 @@ var hexPTests = []struct {
 	out bool
 }{
 	{"0123456789abcdef", true},
+	{"6789abcdefghijkl", false},
 }
 
 var modHexEncodeTests = []struct {
@@ -60,6 +97,7 @@ var modHexEncodeTests = []struct {
 }{
 	{"test", "ifhgieif"},
 	{"justanothergotest", "hligieifhbhuhvifhjhgidhihvifhgieif"},
+	{"foobar", "hhhvhvhdhbid"},
 }
 
 var modHexPTests = []struct {
@@ -119,6 +157,33 @@ func TestAes(t *testing.T) {
 		buf = []byte(test.buf)
 		if res := AesDecrypt(buf, test.key); !bytes.Equal(res, []byte(test.out)) {
 			t.Errorf("AesDecrypt test #%d failed: got: %s want: %s",
+				x, res, test.out)
+			continue
+		}
+	}
+}
+
+func TestCapslock(t *testing.T) {
+	res := Capslock(capslockTest.in)
+	if res != capslockTest.out {
+		t.Errorf("Capslock test failed: got: %d want: %d",
+			res, capslockTest.out)
+	}
+}
+
+func TestCounter(t *testing.T) {
+	res := Counter(counterTest.in)
+	if res != counterTest.out {
+		t.Errorf("Counter test failed: got: %d want: %d",
+			res, counterTest.out)
+	}
+}
+
+func TestCrcOkP(t *testing.T) {
+	for x, test := range crcOkPTests {
+		// Encode tests
+		if res := CrcOkP(test.in); res != test.out {
+			t.Errorf("CrcModP test #%d failed: got: %v want: %v",
 				x, res, test.out)
 			continue
 		}
