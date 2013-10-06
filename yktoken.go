@@ -40,13 +40,8 @@ func Generate(token Token, key Key) (*OTP, error) {
 	aesenc := AesEncrypt(buf.Bytes(), key)
 	modenc := ModHexEncode(aesenc)
 
-	buf.Reset()
-	if err := binary.Write(&buf, binary.LittleEndian, modenc); err != nil {
-		return nil, err
-	}
-
 	var o OTP
-	copy(o[:], buf.Bytes())
+	copy(o[:], modenc)
 
 	return &o, nil
 }
@@ -64,12 +59,8 @@ func CrcOkP(token []byte) bool {
 }
 
 func Parse(otp *OTP, key Key) (*Token, error) {
-	var buf bytes.Buffer
-	if err := binary.Write(&buf, binary.LittleEndian, otp); err != nil {
-		return nil, err
-	}
 
-	moddec := ModHexDecode(buf.Bytes())
+	moddec := ModHexDecode((*otp)[:])
 	aesdec := AesDecrypt(moddec, key)
 	aesdecReader := bytes.NewBuffer(aesdec)
 
