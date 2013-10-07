@@ -7,6 +7,7 @@ package yubikey
 import (
 	"bytes"
 	"encoding/binary"
+	"errors"
 )
 
 const (
@@ -16,6 +17,9 @@ const (
 	UidSize      = 6
 	CrcOkResidue = 0xf0b8
 )
+
+// The supplied OTP was corrupt
+var ErrCorruptOTP = errors.New("yubikey: corrupt otp")
 
 type Key [KeySize]byte
 type OTP [OtpSize]byte
@@ -62,6 +66,11 @@ func Parse(otp *OTP, key Key) (*Token, error) {
 
 	moddec := ModHexDecode((*otp)[:])
 	aesdec := AesDecrypt(moddec, key)
+
+	if !CrcOkP(aesdec) {
+		return nil, ErrCorruptOTP
+	}
+
 	aesdecReader := bytes.NewBuffer(aesdec)
 
 	var token Token
