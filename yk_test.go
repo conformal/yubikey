@@ -6,6 +6,8 @@ package yubikey
 
 import (
 	"bytes"
+	"encoding/hex"
+	"reflect"
 	"testing"
 )
 
@@ -318,5 +320,22 @@ func TestOtp(t *testing.T) {
 			continue
 		}
 
+	}
+}
+
+func TestNewToken(t *testing.T) {
+
+	// sample key from test-vectors.txt
+	uid, _ := hex.DecodeString("8792ebfe26cc")
+
+	token, _ := NewToken(NewUid(string(uid)), 19, 49712, 0, 17, 40904)
+
+	var u Uid
+	copy(u[:], uid)
+
+	tok := &Token{Uid: u, Ctr: 19, Tstpl: 49712, Tstph: 0, Use: 17, Rnd: 40904, Crc: 51235}
+
+	if !reflect.DeepEqual(tok, token) {
+		t.Errorf("TestNewToken failed: got=%#v wanted=%#v", token, tok)
 	}
 }
