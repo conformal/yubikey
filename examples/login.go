@@ -3,7 +3,7 @@ package main
 import (
 	"flag"
 	"fmt"
-	"yubikey"
+	"github.com/conformal/yubikey"
 )
 
 const (

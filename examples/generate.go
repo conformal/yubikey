@@ -3,10 +3,10 @@ package main
 import (
 	"flag"
 	"fmt"
+	"github.com/conformal/yubikey"
 	"math/rand"
 	"strconv"
 	"time"
-	"yubikey"
 )
 
 func main() {
@@ -47,23 +47,12 @@ func main() {
 	r := rand.New(rand.NewSource(time.Now().UnixNano()))
 	rnd := uint16(r.Int())
 
-	token, err := yubikey.NewToken(uid, uint16(ctr), uint16(tstpl),
+	token := yubikey.NewToken(uid, uint16(ctr), uint16(tstpl),
 		uint8(tstph), uint8(use), rnd)
-	if err != nil {
-		fmt.Printf("TokenNew error: %v\n", err)
-		return
-	}
 
-	otp, err := token.Generate(key)
-	if err != nil {
-		fmt.Printf("yubikey.Generate error: %v\n", err)
-		return
-	}
+	otp := token.Generate(key)
 
-	str, err := otp.Bytes()
-	if err != nil {
-		fmt.Printf("otp.Serialize error: %v\n", err)
-	}
+	str := otp.Bytes()
 	fmt.Printf("%s\n", string(str))
 }
 
