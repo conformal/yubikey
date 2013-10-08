@@ -328,7 +328,7 @@ func TestNewToken(t *testing.T) {
 	// sample key from test-vectors.txt
 	uid, _ := hex.DecodeString("8792ebfe26cc")
 
-	token, _ := NewToken(NewUid(string(uid)), 19, 49712, 0, 17, 40904)
+	token := NewToken(NewUid(string(uid)), 19, 49712, 0, 17, 40904)
 
 	var u Uid
 	copy(u[:], uid)
