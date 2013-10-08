@@ -5,7 +5,6 @@
 package yubikey
 
 import (
-	"bytes"
 	"encoding/binary"
 	"errors"
 )
@@ -45,7 +44,7 @@ var (
 // NewToken is a helper function to create a new Token.
 // The CRC is calculated for the caller.
 func NewToken(uid Uid, ctr, tstpl uint16, tstph,
-	use uint8, rnd uint16) (*Token, error) {
+	use uint8, rnd uint16) *Token {
 	token := Token{
 		Uid:   uid,
 		Ctr:   ctr,
@@ -56,13 +55,11 @@ func NewToken(uid Uid, ctr, tstpl uint16, tstph,
 	}
 
 	// Calculate CRC
-	var buf bytes.Buffer
-	if err := binary.Write(&buf, binary.LittleEndian, token); err != nil {
-		return nil, err
-	}
-	token.Crc = ^crc16(buf.Bytes()[:14])
+	buf := token.Bytes()
 
-	return &token, nil
+	token.Crc = ^crc16(buf[:14])
+
+	return &token
 }
 
 // NewTokenFromBytes converts a byte stream into a Token.
@@ -70,25 +67,29 @@ func NewToken(uid Uid, ctr, tstpl uint16, tstph,
 func NewTokenFromBytes(buf []byte) (*Token, error) {
 	var token Token
 
-	reader := bytes.NewBuffer(buf)
-	if err := binary.Read(reader, binary.LittleEndian, &token); err != nil {
-		return nil, err
-	}
-
-	if !token.CrcOkP() {
+	// This goes first to avoid buf->token->buf dance that would happen if it was at the end
+	if len(buf) != 16 || !Crc16BufOkP(buf) {
 		return nil, ErrCrcFailure
 	}
+
+	copy(token.Uid[:], buf[:6])
+
+	token.Ctr = binary.LittleEndian.Uint16(buf[6:])
+	token.Tstpl = binary.LittleEndian.Uint16(buf[8:])
+
+	token.Tstph = buf[10]
+	token.Use = buf[11]
+
+	token.Rnd = binary.LittleEndian.Uint16(buf[12:])
+	token.Crc = binary.LittleEndian.Uint16(buf[14:])
 
 	return &token, nil
 }
 
 // Generate encrypts a Token with the specified Key
 // and returns a OTP.
-func (t *Token) Generate(key Key) (*OTP, error) {
-	buf, err := t.Bytes()
-	if err != nil {
-		return nil, err
-	}
+func (t *Token) Generate(key Key) *OTP {
+	buf := t.Bytes()
 
 	aesenc := AesEncrypt(buf, key)
 	modenc := ModHexEncode(aesenc)
@@ -96,7 +97,7 @@ func (t *Token) Generate(key Key) (*OTP, error) {
 	var o OTP
 	copy(o[:], modenc)
 
-	return &o, nil
+	return &o
 }
 
 func (t *Token) Capslock() uint16 {
@@ -113,9 +114,13 @@ func (t *Token) CrcOkP() bool {
 
 // Crc16 returns the CRC associated with the Token.
 func (t *Token) Crc16() uint16 {
-	buf, _ := t.Bytes()
+	buf := t.Bytes()
 
 	return crc16(buf)
+}
+
+func Crc16BufOkP(buf []byte) bool {
+	return crc16(buf) == CrcOkResidue
 }
 
 func crc16(buf []byte) uint16 {
@@ -136,12 +141,18 @@ func crc16(buf []byte) uint16 {
 
 // Bytes returns the byte stream associated with
 // the Token.
-func (t *Token) Bytes() ([]byte, error) {
-	var buf bytes.Buffer
-	if err := binary.Write(&buf, binary.LittleEndian, t); err != nil {
-		return nil, err
-	}
-	return buf.Bytes(), nil
+func (t *Token) Bytes() []byte {
+	buf := make([]byte, 16)
+
+	copy(buf[:6], t.Uid[:])
+	binary.LittleEndian.PutUint16(buf[6:], t.Ctr)
+	binary.LittleEndian.PutUint16(buf[8:], t.Tstpl)
+	buf[10] = t.Tstph
+	buf[11] = t.Use
+	binary.LittleEndian.PutUint16(buf[12:], t.Rnd)
+	binary.LittleEndian.PutUint16(buf[14:], t.Crc)
+
+	return buf
 }
 
 // NewKey the specified string to a Key structure.
@@ -163,10 +174,7 @@ func NewOtp(buf string) OTP {
 // Parse decodes and decrypts the OTP with the specified Key
 // returning a Token.
 func (o OTP) Parse(key Key) (*Token, error) {
-	buf, err := o.Bytes()
-	if err != nil {
-		return nil, err
-	}
+	buf := o.Bytes()
 
 	moddec := ModHexDecode(buf)
 	aesdec := AesDecrypt(moddec, key)
@@ -181,12 +189,11 @@ func (o OTP) Parse(key Key) (*Token, error) {
 
 // Bytes returns the byte stream associated with
 // the OTP.
-func (o OTP) Bytes() ([]byte, error) {
-	var buf bytes.Buffer
-	if err := binary.Write(&buf, binary.LittleEndian, o); err != nil {
-		return nil, err
-	}
-	return buf.Bytes(), nil
+func (o OTP) Bytes() []byte {
+	buf := make([]byte, len(o))
+	copy(buf, o[:])
+
+	return buf
 }
 
 // NewUid returns a UID structure.

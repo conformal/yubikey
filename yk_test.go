@@ -285,11 +285,7 @@ func TestParse(t *testing.T) {
 			continue
 		}
 
-		buf, err := res.Bytes()
-		if err != nil {
-			t.Errorf("TestParse test #%d failed: %v", x, err)
-			continue
-		}
+		buf := res.Bytes()
 
 		if !bytes.Equal(buf, test.result) {
 			t.Errorf("TestParse test #%d failed: got: %x want: %x",
@@ -307,21 +303,15 @@ func TestOtp(t *testing.T) {
 			continue
 		}
 		key := NewKey(string(test.key))
-		otp, err := token.Generate(key)
-		if err != nil {
-			t.Errorf("TestOtp test #%d failed: %v", x, err)
-			continue
-		}
+		otp := token.Generate(key)
+
 		res, err := otp.Parse(key)
 		if err != nil {
 			t.Errorf("TestOtp test #%d failed: %v", x, err)
 			continue
 		}
-		buf, err := res.Bytes()
-		if err != nil {
-			t.Errorf("TestOtp test #%d failed: %v", x, err)
-			continue
-		}
+		buf := res.Bytes()
+
 		if !bytes.Equal(test.token, buf) {
 			t.Errorf("TestOtp test #%d failed: got: %v want: %v",
 				x, test.token, buf)
