@@ -80,9 +80,9 @@ var (
 	}
 )
 
-func AesDecrypt(s []byte, key Key) []byte {
-	state := make([]byte, len(s))
-	copy(state, s)
+func AesDecrypt(src []byte, key Key) []byte {
+	state := make([]byte, len(src))
+	copy(state, src)
 
 	round_key := key
 

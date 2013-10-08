@@ -12,7 +12,7 @@ const (
 	HexMap = "0123456789abcdef"
 )
 
-func HexEncode(src []byte) []byte {
+func HexEncode(src string) string {
 	dst := make([]byte, len(src)*2)
 	idx := 0
 
@@ -21,15 +21,16 @@ func HexEncode(src []byte) []byte {
 		dst[idx+1] = HexMap[val&0xf]
 		idx += 2
 	}
-	return dst
+	return string(dst)
 }
 
-func HexDecode(src []byte) []byte {
+func HexDecode(src string) string {
+	srcbuf := []byte(src)
 	dst := make([]byte, (len(src)+1)/2)
 	idx := 0
 	alt := false
 
-	for _, val := range src {
+	for _, val := range srcbuf {
 		b := bytes.IndexByte([]byte(HexMap), val)
 		if b == -1 {
 			b = 0
@@ -46,7 +47,7 @@ func HexDecode(src []byte) []byte {
 		}
 	}
 
-	return dst
+	return string(dst)
 }
 
 func HexP(src []byte) bool {
