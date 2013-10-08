@@ -210,7 +210,7 @@ func TestCrc(t *testing.T) {
 	for x, test := range crcTests {
 		token, err := NewTokenFromBytes(test.in)
 		if err != nil {
-			t.Errorf("Crc16 test #%d failed: %v\n", err)
+			t.Errorf("Crc16 test #%d failed: %v\n", x, err)
 			continue
 		}
 
