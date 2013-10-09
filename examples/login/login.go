@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/hex"
 	"flag"
 	"fmt"
 	"github.com/conformal/yubikey"
@@ -27,7 +28,8 @@ func main() {
 	pass := args[0][len(args[0])-(yubikey.OtpSize):]
 
 	otp := yubikey.NewOtp(pass)
-	key := yubikey.NewKey(yubikey.HexDecode(secretKey))
+	keyBytes, _ := hex.DecodeString(secretKey)
+	key := yubikey.NewKey(keyBytes)
 
 	token, err := otp.Parse(key)
 	if err != nil {
