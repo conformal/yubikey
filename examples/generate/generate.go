@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/hex"
 	"flag"
 	"fmt"
 	"github.com/conformal/yubikey"
@@ -18,8 +19,18 @@ func main() {
 		return
 	}
 
-	key := yubikey.NewKey(yubikey.HexDecode(args[0]))
-	uid := yubikey.NewUid(yubikey.HexDecode(args[1]))
+	keyBytes, err := hex.DecodeString(args[0])
+	if err != nil {
+		fmt.Println("error decoding key:", err)
+		return
+	}
+	key := yubikey.NewKey(keyBytes)
+	uidBytes, _ := hex.DecodeString(args[1])
+	if err != nil {
+		fmt.Println("error decoding uid:", err)
+		return
+	}
+	uid := yubikey.NewUid(uidBytes)
 
 	ctr, err := strconv.Atoi(args[2])
 	if err != nil {

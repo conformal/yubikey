@@ -156,7 +156,7 @@ func (t *Token) Bytes() []byte {
 }
 
 // NewKey the specified string to a Key structure.
-func NewKey(buf string) Key {
+func NewKey(buf []byte) Key {
 	var key Key
 	copy(key[:], buf)
 
@@ -197,7 +197,7 @@ func (o OTP) Bytes() []byte {
 }
 
 // NewUid returns a UID structure.
-func NewUid(buf string) Uid {
+func NewUid(buf []byte) Uid {
 	var uid Uid
 	copy(uid[:], buf)
 

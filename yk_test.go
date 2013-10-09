@@ -12,22 +12,22 @@ import (
 )
 
 var aesEncodeTests = []struct {
-	buf string
-	key string
-	out string
+	buf []byte
+	key []byte
+	out []byte
 }{
 	{
-		"0123456789abcdef",
-		"abcdef0123456789",
-		"\x83\x8a\x46\x7f\x34\x63\x95\x51\x75\x5b\xd3\x2a\x4a\x2f\x15\xe1",
+		[]byte("0123456789abcdef"),
+		[]byte("abcdef0123456789"),
+		[]byte{
+			0x83, 0x8a, 0x46, 0x7f, 0x34, 0x63, 0x95, 0x51,
+			0x75, 0x5b, 0xd3, 0x2a, 0x4a, 0x2f, 0x15, 0xe1,
+		},
 	},
 	{
-		"\x69\xb6\x48\x1c\x8b\xab\xa2\xb6\x0e\x8f\x22\x17\x9b\x58\xcd\x56",
-		string([]byte{
-			0xec, 0xde, 0x18, 0xdb, 0xe7, 0x6f, 0xbd, 0x0c,
-			0x33, 0x33, 0x0f, 0x1c, 0x35, 0x48, 0x71, 0xdb,
-		}),
-		"\x87\x92\xeb\xfe\x26\xcc\x13\x00\x30\xc2\x00\x11\xc8\x9f\x23\xc8",
+		[]byte{0x69, 0xb6, 0x48, 0x1c, 0x8b, 0xab, 0xa2, 0xb6, 0x0e, 0x8f, 0x22, 0x17, 0x9b, 0x58, 0xcd, 0x56},
+		[]byte{0xec, 0xde, 0x18, 0xdb, 0xe7, 0x6f, 0xbd, 0x0c, 0x33, 0x33, 0x0f, 0x1c, 0x35, 0x48, 0x71, 0xdb},
+		[]byte{0x87, 0x92, 0xeb, 0xfe, 0x26, 0xcc, 0x13, 0x00, 0x30, 0xc2, 0x00, 0x11, 0xc8, 0x9f, 0x23, 0xc8},
 	},
 }
 
@@ -42,21 +42,6 @@ var crcTests = []struct {
 		},
 		61624,
 	},
-}
-
-var hexEncodeTests = []struct {
-	in  string
-	out string
-}{
-	{"test", "74657374"},
-}
-
-var hexPTests = []struct {
-	in  string
-	out bool
-}{
-	{"0123456789abcdef", true},
-	{"6789abcdefghijkl", false},
 }
 
 var modHexEncodeTests = []struct {
@@ -78,15 +63,15 @@ var modHexPTests = []struct {
 
 var parseTests = []struct {
 	token  string
-	key    string
+	key    []byte
 	result []byte
 }{
 	{
 		"dcflcindvdbrblehecuitvjkjevvehjd",
-		string([]byte{
+		[]byte{
 			0xec, 0xde, 0x18, 0xdb, 0xe7, 0x6f, 0xbd, 0x0c,
 			0x33, 0x33, 0x0f, 0x1c, 0x35, 0x48, 0x71, 0xdb,
-		}),
+		},
 		[]byte{
 			0x87, 0x92, 0xeb, 0xfe, 0x26, 0xcc, 0x13, 0x00,
 			0xa8, 0xc0, 0x00, 0x10, 0xb4, 0x08, 0x6f, 0x5b,
@@ -94,10 +79,10 @@ var parseTests = []struct {
 	},
 	{
 		"hknhfjbrjnlnldnhcujvddbikngjrtgh",
-		string([]byte{
+		[]byte{
 			0xec, 0xde, 0x18, 0xdb, 0xe7, 0x6f, 0xbd, 0x0c,
 			0x33, 0x33, 0x0f, 0x1c, 0x35, 0x48, 0x71, 0xdb,
-		}),
+		},
 		[]byte{
 			0x87, 0x92, 0xeb, 0xfe, 0x26, 0xcc, 0x13, 0x00,
 			0x30, 0xc2, 0x00, 0x11, 0xc8, 0x9f, 0x23, 0xc8,
@@ -222,33 +207,6 @@ func TestCrc(t *testing.T) {
 	}
 }
 
-func TestHex(t *testing.T) {
-	// Encode and Decode tests
-	for x, test := range hexEncodeTests {
-		// Encode tests
-		if res := HexEncode(test.in); res != test.out {
-			t.Errorf("HexEncode test #%d failed: got: %s want: %s",
-				x, res, test.out)
-			continue
-		}
-		// Decode tests
-		if res := HexDecode(test.out); res != test.in {
-			t.Errorf("HexDecode test #%d failed: got: %s want: %s",
-				x, res, test.in)
-			continue
-		}
-
-	}
-	for x, test := range hexPTests {
-		tmp := []byte(test.in)
-		if res := HexP(tmp); res != test.out {
-			t.Errorf("HexP test #%d failed: got: %v want: %v",
-				x, res, test.out)
-			continue
-		}
-	}
-}
-
 func TestModHex(t *testing.T) {
 	// Encode and Decode tests
 	for x, test := range modHexEncodeTests {
@@ -304,7 +262,7 @@ func TestOtp(t *testing.T) {
 			t.Errorf("TestOtp test #%d failed: %v", x, err)
 			continue
 		}
-		key := NewKey(string(test.key))
+		key := NewKey(test.key)
 		otp := token.Generate(key)
 
 		res, err := otp.Parse(key)
@@ -328,7 +286,7 @@ func TestNewToken(t *testing.T) {
 	// sample key from test-vectors.txt
 	uid, _ := hex.DecodeString("8792ebfe26cc")
 
-	token := NewToken(NewUid(string(uid)), 19, 49712, 0, 17, 40904)
+	token := NewToken(NewUid(uid), 19, 49712, 0, 17, 40904)
 
 	var u Uid
 	copy(u[:], uid)
