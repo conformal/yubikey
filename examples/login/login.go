@@ -61,7 +61,7 @@ func main() {
 		token.Counter(), token.Counter())
 	fmt.Printf("            modhex uid: %s\n", yubikey.ModHexEncode(token.Uid[:]))
 
-	fmt.Printf("triggered by caps lock: %v\n", token.Capslock() == 0x8000)
+	fmt.Printf("triggered by caps lock: %v\n", token.Capslock())
 	fmt.Printf("                   crc: %04X\n", token.Crc16())
 	fmt.Printf("             crc check: %v\n", token.CrcOkP())
 }

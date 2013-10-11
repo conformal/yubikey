@@ -126,7 +126,7 @@ func TestCapslock(t *testing.T) {
 			continue
 		}
 
-		res := token.Capslock() == 0x8000
+		res := token.Capslock()
 		if res != test.capslock {
 			t.Errorf("Capslock test #%d failed: got: %v want: %v",
 				x, res, test.capslock)
