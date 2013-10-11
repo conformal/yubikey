@@ -11,26 +11,6 @@ import (
 	"testing"
 )
 
-var aesEncodeTests = []struct {
-	buf []byte
-	key []byte
-	out []byte
-}{
-	{
-		[]byte("0123456789abcdef"),
-		[]byte("abcdef0123456789"),
-		[]byte{
-			0x83, 0x8a, 0x46, 0x7f, 0x34, 0x63, 0x95, 0x51,
-			0x75, 0x5b, 0xd3, 0x2a, 0x4a, 0x2f, 0x15, 0xe1,
-		},
-	},
-	{
-		[]byte{0x69, 0xb6, 0x48, 0x1c, 0x8b, 0xab, 0xa2, 0xb6, 0x0e, 0x8f, 0x22, 0x17, 0x9b, 0x58, 0xcd, 0x56},
-		[]byte{0xec, 0xde, 0x18, 0xdb, 0xe7, 0x6f, 0xbd, 0x0c, 0x33, 0x33, 0x0f, 0x1c, 0x35, 0x48, 0x71, 0xdb},
-		[]byte{0x87, 0x92, 0xeb, 0xfe, 0x26, 0xcc, 0x13, 0x00, 0x30, 0xc2, 0x00, 0x11, 0xc8, 0x9f, 0x23, 0xc8},
-	},
-}
-
 var crcTests = []struct {
 	in  []byte
 	out uint16
@@ -136,26 +116,6 @@ var otpTests = []struct {
 		true,
 		true,
 	},
-}
-
-func TestAes(t *testing.T) {
-	// Encrypt and Decrypt tests
-	for x, test := range aesEncodeTests {
-		// Encrypt tests
-		key := NewKey(test.key)
-		if res := AesEncrypt([]byte(test.out), key); !bytes.Equal(res, []byte(test.buf)) {
-			t.Errorf("AesEncrypt test #%d failed: got: %s want: %s",
-				x, res, test.buf)
-			continue
-		}
-
-		// Decrypt tests
-		if res := AesDecrypt([]byte(test.buf), key); !bytes.Equal(res, []byte(test.out)) {
-			t.Errorf("AesDecrypt test #%d failed: got: %s want: %s",
-				x, res, test.out)
-			continue
-		}
-	}
 }
 
 func TestCapslock(t *testing.T) {

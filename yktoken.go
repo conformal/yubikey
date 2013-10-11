@@ -5,6 +5,7 @@
 package yubikey
 
 import (
+	"crypto/aes"
 	"encoding/binary"
 	"errors"
 )
@@ -91,11 +92,13 @@ func NewTokenFromBytes(buf []byte) (*Token, error) {
 func (t *Token) Generate(key Key) *OTP {
 	buf := t.Bytes()
 
-	aesenc := AesEncrypt(buf, key)
-	modenc := ModHexEncode(aesenc)
+	cipher, _ /* ignored */ := aes.NewCipher(key[:])
+	cipher.Encrypt(buf, buf)
+
+	buf = ModHexEncode(buf)
 
 	var o OTP
-	copy(o[:], modenc)
+	copy(o[:], buf)
 
 	return &o
 }
@@ -176,10 +179,12 @@ func NewOtp(buf string) OTP {
 func (o OTP) Parse(key Key) (*Token, error) {
 	buf := o.Bytes()
 
-	moddec := ModHexDecode(buf)
-	aesdec := AesDecrypt(moddec, key)
+	buf = ModHexDecode(buf)
 
-	token, err := NewTokenFromBytes(aesdec)
+	cipher, _ /* ignored */ := aes.NewCipher(key[:])
+	cipher.Decrypt(buf, buf)
+
+	token, err := NewTokenFromBytes(buf)
 	if err != nil {
 		return nil, err
 	}
