@@ -16,7 +16,7 @@ const (
 	KeySize      = 16
 	OtpSize      = 32 // BlockSize * 2
 	UidSize      = 6
-	PubUidSize   = 12
+	MaxPubIdSize = 16
 	CrcOkResidue = 0xf0b8
 )
 
@@ -32,7 +32,16 @@ type OTP [OtpSize]byte
 type Uid [UidSize]byte
 
 // Pub represents the Public id.
-type Pub [PubUidSize]byte
+type Pub []byte
+
+func (pub Pub) Valid() bool {
+	if pub == nil || len(pub) == 0 {
+		return false
+	} else if len(pub) > MaxPubIdSize {
+		return false
+	}
+	return true
+}
 
 // Token represents the YubiKey token structure.
 type Token struct {
@@ -185,13 +194,18 @@ func NewOtp(buf string) OTP {
 func ParseOtpString(in string) (pub Pub, otp OTP, err error) {
 	// Remove any newlines from the OTP string.
 	in = strings.TrimSpace(in)
-	if len(in) != PubUidSize+OtpSize {
+	if len(in) < 1+OtpSize {
+		err = ErrInvalidOTPString
+		return
+	} else if len(in) > OtpSize+MaxPubIdSize {
 		err = ErrInvalidOTPString
 		return
 	}
 
-	copy(pub[:], in)
-	otp = NewOtp(in[PubUidSize:])
+	otpStart := len(in) - OtpSize
+	pub = make([]byte, otpStart)
+	copy(pub, in[:otpStart])
+	otp = NewOtp(in[otpStart:])
 	return
 }
 
