@@ -18,6 +18,8 @@ const (
 	CrcOkResidue = 0xf0b8
 )
 
+var ErrInvalidOTPString = errors.New("yubikey: invalid OTP string")
+
 // Key represents the symmetric 128-bit AES Key
 type Key [KeySize]byte
 
@@ -39,13 +41,12 @@ type Token struct {
 }
 
 var (
-	ErrCrcFailure = errors.New("CRC failure")
+	ErrCrcFailure = errors.New("yubikey: CRC failure")
 )
 
 // NewToken is a helper function to create a new Token.
 // The CRC is calculated for the caller.
-func NewToken(uid Uid, ctr, tstpl uint16, tstph,
-	use uint8, rnd uint16) *Token {
+func NewToken(uid Uid, ctr, tstpl uint16, tstph, use uint8, rnd uint16) *Token {
 	token := Token{
 		Uid:   uid,
 		Ctr:   ctr,
@@ -167,7 +168,7 @@ func NewKey(buf []byte) Key {
 	return key
 }
 
-// NewOTP converts a string into an OTP structure.
+// NewOtp converts a string into an OTP structure.
 func NewOtp(buf string) OTP {
 	var otp OTP
 	copy(otp[:], buf)
