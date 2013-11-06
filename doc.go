@@ -23,5 +23,8 @@
 
    See examples/login/login.go for an example login authentication
    flow.
+
+   Remember to keep track of the counter returned from the tokens;
+   this should be checked to prevent replay attacks.
 */
 package yubikey

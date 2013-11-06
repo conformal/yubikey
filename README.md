@@ -54,6 +54,11 @@ Then, you can pass the OTP string directly from the Yubikey to
 	}
 ```
 
+It is important to keep track of the Yubikey's counter as well;
+this is a 16-bit unsigned integer. The counter value in the token
+should be checked against the last known counter value of the
+Yubikey to prevent replay attacks.
+
 ## License
 
 Package yubikey is licensed under the liberal ISC License.
