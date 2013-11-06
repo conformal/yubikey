@@ -5,11 +5,21 @@ import (
 	"flag"
 	"fmt"
 	"github.com/conformal/yubikey"
+	"io/ioutil"
+	"os"
+	"strings"
 )
 
-const (
-	secretKey = "1585b014243c43360e3fe4d993c8b4c4"
-)
+var secretKey string
+
+func init() {
+	in, err := ioutil.ReadFile("secret.key")
+	if err != nil {
+		fmt.Println(err.Error())
+		os.Exit(1)
+	}
+	secretKey = strings.TrimSpace(string(in))
+}
 
 func main() {
 	flag.Parse()
@@ -19,15 +29,11 @@ func main() {
 		usage()
 		return
 	}
-	if len(args[0]) < 33 {
-		fmt.Printf("OTP must be at least 33 characters\n")
+	_, otp, err := yubikey.ParseOTPString(args[0])
+	if err != nil {
+		fmt.Printf("yubikey.ParseOTPString error: %v\n", err)
 		return
 	}
-
-	// The pass is the last 32 (OtpSize) bytes
-	pass := args[0][len(args[0])-(yubikey.OtpSize):]
-
-	otp := yubikey.NewOtp(pass)
 	keyBytes, _ := hex.DecodeString(secretKey)
 	key := yubikey.NewKey(keyBytes)
 

@@ -15,10 +15,10 @@ func main() {
 		usage()
 		return
 	}
-	otp := yubikey.NewOtp(args[1])
+	otp := yubikey.NewOTP(args[1])
 	keyBytes, err := hex.DecodeString(args[0])
 	if err != nil {
-		fmt.Printf("error decoding key:", err)
+		fmt.Println("error decoding key:", err)
 		return
 	}
 	key := yubikey.NewKey(keyBytes)

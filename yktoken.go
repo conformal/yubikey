@@ -8,24 +8,40 @@ import (
 	"crypto/aes"
 	"encoding/binary"
 	"errors"
+	"strings"
 )
 
 const (
 	BlockSize    = 16
 	KeySize      = 16
-	OtpSize      = 32 // BlockSize * 2
+	OTPSize      = 32 // BlockSize * 2
 	UidSize      = 6
+	MaxPubIdSize = 16
 	CrcOkResidue = 0xf0b8
 )
+
+var ErrInvalidOTPString = errors.New("invalid OTP string")
 
 // Key represents the symmetric 128-bit AES Key
 type Key [KeySize]byte
 
 // OTP represents the One Time Password
-type OTP [OtpSize]byte
+type OTP [OTPSize]byte
 
 // Uid represents the Private (secret) id.
 type Uid [UidSize]byte
+
+// Pub represents the Public id.
+type PubID []byte
+
+func (pub PubID) Valid() bool {
+	if pub == nil || len(pub) == 0 {
+		return false
+	} else if len(pub) > MaxPubIdSize {
+		return false
+	}
+	return true
+}
 
 // Token represents the YubiKey token structure.
 type Token struct {
@@ -44,8 +60,7 @@ var (
 
 // NewToken is a helper function to create a new Token.
 // The CRC is calculated for the caller.
-func NewToken(uid Uid, ctr, tstpl uint16, tstph,
-	use uint8, rnd uint16) *Token {
+func NewToken(uid Uid, ctr, tstpl uint16, tstph, use uint8, rnd uint16) *Token {
 	token := Token{
 		Uid:   uid,
 		Ctr:   ctr,
@@ -168,11 +183,33 @@ func NewKey(buf []byte) Key {
 }
 
 // NewOTP converts a string into an OTP structure.
-func NewOtp(buf string) OTP {
+func NewOTP(buf string) OTP {
 	var otp OTP
 	copy(otp[:], buf)
 
 	return otp
+}
+
+// ParseOTPString returns an OTP and public id from an OTP string.
+func ParseOTPString(in string) (PubID, OTP, error) {
+	var (
+		pub PubID
+		otp OTP
+	)
+
+	// Remove any newlines from the OTP string.
+	in = strings.TrimSpace(in)
+	if len(in) < 1+OTPSize {
+		return pub, otp, ErrInvalidOTPString
+	} else if len(in) > OTPSize+MaxPubIdSize {
+		return pub, otp, ErrInvalidOTPString
+	}
+
+	otpStart := len(in) - OTPSize
+	pub = make([]byte, otpStart)
+	copy(pub, in[:otpStart])
+	otp = NewOTP(in[otpStart:])
+	return pub, otp, nil
 }
 
 // Parse decodes and decrypts the OTP with the specified Key
