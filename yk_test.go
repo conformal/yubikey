@@ -197,7 +197,7 @@ func TestModHex(t *testing.T) {
 
 func TestParse(t *testing.T) {
 	for x, test := range parseTests {
-		otp := NewOtp(test.token)
+		otp := NewOTP(test.token)
 		key := NewKey(test.key)
 		res, err := otp.Parse(key)
 		if err != nil {
