@@ -4,7 +4,7 @@ import (
 	"encoding/hex"
 	"flag"
 	"fmt"
-	"github.com/kisom/yubikey"
+	"github.com/conformal/yubikey"
 	"io/ioutil"
 	"os"
 	"strings"
