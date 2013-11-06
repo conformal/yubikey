@@ -29,7 +29,7 @@ func main() {
 		usage()
 		return
 	}
-	_, otp, err := yubikey.ParseOtpString(args[0])
+	_, otp, err := yubikey.ParseOTPString(args[0])
 	if err != nil {
 		fmt.Printf("yubikey.ParseOTPString error: %v\n", err)
 		return

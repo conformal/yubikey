@@ -14,7 +14,7 @@ import (
 const (
 	BlockSize    = 16
 	KeySize      = 16
-	OtpSize      = 32 // BlockSize * 2
+	OTPSize      = 32 // BlockSize * 2
 	UidSize      = 6
 	MaxPubIdSize = 16
 	CrcOkResidue = 0xf0b8
@@ -26,7 +26,7 @@ var ErrInvalidOTPString = errors.New("invalid OTP string")
 type Key [KeySize]byte
 
 // OTP represents the One Time Password
-type OTP [OtpSize]byte
+type OTP [OTPSize]byte
 
 // Uid represents the Private (secret) id.
 type Uid [UidSize]byte
@@ -182,31 +182,34 @@ func NewKey(buf []byte) Key {
 	return key
 }
 
-// NewOtp converts a string into an OTP structure.
-func NewOtp(buf string) OTP {
+// NewOTP converts a string into an OTP structure.
+func NewOTP(buf string) OTP {
 	var otp OTP
 	copy(otp[:], buf)
 
 	return otp
 }
 
-// ParseOtpString returns an OTP and public id from an OTP string.
-func ParseOtpString(in string) (pub Pub, otp OTP, err error) {
+// ParseOTPString returns an OTP and public id from an OTP string.
+func ParseOTPString(in string) (Pub, OTP, error) {
+	var (
+		pub Pub
+		otp OTP
+	)
+
 	// Remove any newlines from the OTP string.
 	in = strings.TrimSpace(in)
-	if len(in) < 1+OtpSize {
-		err = ErrInvalidOTPString
-		return
-	} else if len(in) > OtpSize+MaxPubIdSize {
-		err = ErrInvalidOTPString
-		return
+	if len(in) < 1+OTPSize {
+		return pub, otp, ErrInvalidOTPString
+	} else if len(in) > OTPSize+MaxPubIdSize {
+		return pub, otp, ErrInvalidOTPString
 	}
 
-	otpStart := len(in) - OtpSize
+	otpStart := len(in) - OTPSize
 	pub = make([]byte, otpStart)
 	copy(pub, in[:otpStart])
-	otp = NewOtp(in[otpStart:])
-	return
+	otp = NewOTP(in[otpStart:])
+	return pub, otp, nil
 }
 
 // Parse decodes and decrypts the OTP with the specified Key
