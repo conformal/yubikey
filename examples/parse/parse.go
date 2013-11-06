@@ -15,7 +15,7 @@ func main() {
 		usage()
 		return
 	}
-	otp := yubikey.NewOtp(args[1])
+	otp := yubikey.NewOTP(args[1])
 	keyBytes, err := hex.DecodeString(args[0])
 	if err != nil {
 		fmt.Println("error decoding key:", err)
