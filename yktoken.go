@@ -32,9 +32,9 @@ type OTP [OTPSize]byte
 type Uid [UidSize]byte
 
 // Pub represents the Public id.
-type Pub []byte
+type PubID []byte
 
-func (pub Pub) Valid() bool {
+func (pub PubID) Valid() bool {
 	if pub == nil || len(pub) == 0 {
 		return false
 	} else if len(pub) > MaxPubIdSize {
@@ -191,9 +191,9 @@ func NewOTP(buf string) OTP {
 }
 
 // ParseOTPString returns an OTP and public id from an OTP string.
-func ParseOTPString(in string) (Pub, OTP, error) {
+func ParseOTPString(in string) (PubID, OTP, error) {
 	var (
-		pub Pub
+		pub PubID
 		otp OTP
 	)
 
