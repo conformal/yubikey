@@ -16,11 +16,9 @@ const (
 	KeySize      = 16
 	OTPSize      = 32 // BlockSize * 2
 	UidSize      = 6
-	MaxPubIdSize = 16
+	MaxPubIdSize = 32 // BlockSize * 2
 	CrcOkResidue = 0xf0b8
 )
-
-var ErrInvalidOTPString = errors.New("invalid OTP string")
 
 // Key represents the symmetric 128-bit AES Key
 type Key [KeySize]byte
@@ -34,15 +32,6 @@ type Uid [UidSize]byte
 // Pub represents the Public id.
 type PubID []byte
 
-func (pub PubID) Valid() bool {
-	if pub == nil || len(pub) == 0 {
-		return false
-	} else if len(pub) > MaxPubIdSize {
-		return false
-	}
-	return true
-}
-
 // Token represents the YubiKey token structure.
 type Token struct {
 	Uid   Uid
@@ -55,7 +44,9 @@ type Token struct {
 }
 
 var (
-	ErrCrcFailure = errors.New("CRC failure")
+	ErrCrcFailure       = errors.New("CRC failure")
+	ErrInvalidOTPString = errors.New("invalid OTP string")
+	ErrInvalidPubIdLen  = errors.New("invalid public id length")
 )
 
 // NewToken is a helper function to create a new Token.
@@ -191,25 +182,27 @@ func NewOTP(buf string) OTP {
 }
 
 // ParseOTPString returns an OTP and public id from an OTP string.
-func ParseOTPString(in string) (PubID, OTP, error) {
-	var (
-		pub PubID
-		otp OTP
-	)
+func ParseOTPString(str string) (PubID, OTP, error) {
+	var pubid PubID
+	var otp OTP
+	var err error
 
 	// Remove any newlines from the OTP string.
-	in = strings.TrimSpace(in)
-	if len(in) < 1+OTPSize {
-		return pub, otp, ErrInvalidOTPString
-	} else if len(in) > OTPSize+MaxPubIdSize {
-		return pub, otp, ErrInvalidOTPString
+	str = strings.TrimSpace(str)
+	strLen := len(str)
+
+	if strLen <= OTPSize {
+		return pubid, otp, ErrInvalidOTPString
 	}
 
-	otpStart := len(in) - OTPSize
-	pub = make([]byte, otpStart)
-	copy(pub, in[:otpStart])
-	otp = NewOTP(in[otpStart:])
-	return pub, otp, nil
+	otpStart := strLen - OTPSize
+
+	pubid, err = NewPubID(str[:otpStart])
+	if err != nil {
+		return pubid, otp, err
+	}
+	otp = NewOTP(str[otpStart:])
+	return pubid, otp, nil
 }
 
 // Parse decodes and decrypts the OTP with the specified Key
@@ -237,6 +230,16 @@ func (o OTP) Bytes() []byte {
 	copy(buf, o[:])
 
 	return buf
+}
+
+func NewPubID(str string) (PubID, error) {
+	if len(str) < 1 || len(str) > MaxPubIdSize {
+		return nil, ErrInvalidPubIdLen
+	}
+	pubid := make(PubID, len(str))
+	copy(pubid, []byte(str))
+
+	return pubid, nil
 }
 
 // NewUid returns a UID structure.

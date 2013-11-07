@@ -118,6 +118,46 @@ var otpTests = []struct {
 	},
 }
 
+var otpStringTests = []struct {
+	in    string
+	key   []byte
+	uid   Uid
+	pubid PubID
+}{
+	{
+		"vvddbuvjvkbhrtkjrdhvlenirbebujtuhfkrnkvbflcr",
+		[]byte{
+			0x21, 0x47, 0xe5, 0x88, 0xc5, 0x59, 0xdd, 0xc3,
+			0x1f, 0x37, 0x26, 0x52, 0x6c, 0x4d, 0xa6, 0xc4,
+		},
+		Uid{
+			0x34, 0xcb, 0x2f, 0xf0, 0x1d, 0xb8,
+		},
+		PubID{
+			0x76, 0x76, 0x64, 0x64, 0x62, 0x75,
+			0x76, 0x6a, 0x76, 0x6b, 0x62, 0x68,
+		},
+	},
+	{
+		"ccccccbtirnbccccccccccccccccccccketfufegheibrjcinntgtfvkntlguvug",
+		[]byte{
+			0x7a, 0x34, 0x80, 0xbc, 0x19, 0x0d, 0x35, 0xd6,
+			0xcd, 0xb8, 0x86, 0xe6, 0x63, 0xa5, 0x15, 0xc5,
+		},
+		Uid{
+			0x26, 0x6b, 0x89, 0xdd, 0x4a, 0xc7,
+		},
+		PubID{
+			0x63, 0x63, 0x63, 0x63, 0x63, 0x63,
+			0x62, 0x74, 0x69, 0x72, 0x6e, 0x62,
+			0x63, 0x63, 0x63, 0x63, 0x63, 0x63,
+			0x63, 0x63, 0x63, 0x63, 0x63, 0x63,
+			0x63, 0x63, 0x63, 0x63, 0x63, 0x63,
+			0x63, 0x63,
+		},
+	},
+}
+
 func TestCapslock(t *testing.T) {
 	for x, test := range otpTests {
 		token, err := NewTokenFromBytes(test.token)
@@ -238,6 +278,37 @@ func TestOtp(t *testing.T) {
 			continue
 		}
 
+	}
+}
+
+func TestOTPString(t *testing.T) {
+	for x, test := range otpStringTests {
+		pubid, otp, err := ParseOTPString(test.in)
+		if err != nil {
+			t.Errorf("TestOTPString test #%d failed: %v", x, err)
+			continue
+		}
+
+		key := NewKey(test.key)
+		tok, err := otp.Parse(key)
+		if err != nil {
+			t.Errorf("TestOTPString test #%d failed: %v", x, err)
+		}
+
+		if !tok.CrcOkP() {
+			t.Errorf("TestOTPString CrcOkP test #%d failed", x)
+			continue
+		}
+		if !bytes.Equal(tok.Uid[:], test.uid[:]) {
+			t.Errorf("TestOTPString Uid test #%d failed: got: %v want: %v",
+				x, tok.Uid, test.uid)
+			continue
+		}
+		if !bytes.Equal(pubid, test.pubid) {
+			t.Errorf("TestOTPString PubID test #%d failed: got: %x want: %x",
+				x, pubid, test.pubid)
+			continue
+		}
 	}
 }
 
