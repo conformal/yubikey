@@ -13,28 +13,29 @@ loaded from a file with:
 import (
 	"bytes"
 	"encoding/hex"
+	"github.com/conformal/yubikey"
 	"io/ioutil"
 )
 
-func LoadSecretKey(filename string) (priv *Key, err error) {
+func LoadSecretKey(filename string) (*Key, error) {
 	in, err := ioutil.ReadFile(filename)
 	if err != nil {
-		return
+		return nil, err
 	}
 
 	in, err = bytes.TrimSpace(in)
 	if err != nil {
-		return
+		return nil, err
 	}
-	
+
 	keyBytes := make([]byte, len(in) / 2)
 	err = hex.Decode(keyBytes, in)
 	if err != nil {
-		return
+		return nil, err
 	}
 
-	priv = yubikey.NewKey(keyBytes)
-	return
+	priv := yubikey.NewKey(keyBytes)
+	return priv, nil
 }
 ```
 
@@ -42,15 +43,18 @@ Then, you can pass the OTP string directly from the Yubikey to
 `ParseOtpString`:
 
 ```
-	func GetToken(otpString string, priv *Key) (t *Token, err error) {
+	func GetToken(otpString string, priv *Key) (*Token, error) {
 		pub, otp, err := yubikey.ParseOtpString(otpString)
 		if err != nil {
-			return
+			return nil, err
 		}
 
-	        keyBytes, _ := hex.DecodeString(secretKey)
-		t, err = otp.Parse(priv)
-		return
+	        keyBytes, err := hex.DecodeString(secretKey)
+		if err != nil {
+			return nil, err
+		}
+		t, err := otp.Parse(priv)
+		return t, nil
 	}
 ```
 
