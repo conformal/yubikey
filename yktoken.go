@@ -44,9 +44,9 @@ type Token struct {
 }
 
 var (
-	ErrCrcFailure       = errors.New("CRC failure")
-	ErrInvalidOTPString = errors.New("invalid OTP string")
-	ErrInvalidPubIdLen  = errors.New("invalid public id length")
+	ErrCrcFailure       = errors.New("yubikey: CRC failure")
+	ErrInvalidOTPString = errors.New("yubikey: invalid OTP string")
+	ErrInvalidPubIdLen  = errors.New("yubikey: invalid public id length")
 )
 
 // NewToken is a helper function to create a new Token.
