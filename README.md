@@ -1,6 +1,9 @@
 yubikey
 =======
 
+[![Build Status](https://travis-ci.org/conformal/yubikey.png?branch=master)]
+(https://travis-ci.org/conformal/yubikey)
+
 Package yubikey implements the [Yubico](http://www.yubico.com) [yubikey](http://www.yubico.com/products/yubikey-hardware/) API.
 
 ## Example
