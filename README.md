@@ -43,11 +43,11 @@ func LoadSecretKey(filename string) (*Key, error) {
 ```
 
 Then, you can pass the OTP string directly from the Yubikey to
-`ParseOtpString`:
+`ParseOTPString`:
 
 ```
 	func GetToken(otpString string, priv *Key) (*Token, error) {
-		pub, otp, err := yubikey.ParseOtpString(otpString)
+		pub, otp, err := yubikey.ParseOTPString(otpString)
 		if err != nil {
 			return nil, err
 		}
