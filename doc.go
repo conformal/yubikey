@@ -14,7 +14,7 @@
    "ccccccbtirngifjtulftrrijbkuuhtcgvhfdehighcdh"; in this case,
    "ccccccbtirng" is the 12-byte modhex-encoded public identity,
    while the rest of the string contains the actual token. The token
-   can be parsed with the NewOtp or ParseOtpString functions, which
+   can be parsed with the NewOTP or ParseOTPString functions, which
    converts a string containing the token to a valid OTP structure.
    This OTP can be validated and turned into a token using the Parse
    method. The NewOTP requires a string containing only the 32-byte

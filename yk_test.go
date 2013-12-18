@@ -255,11 +255,11 @@ func TestParse(t *testing.T) {
 	}
 }
 
-func TestOtp(t *testing.T) {
+func TestOTP(t *testing.T) {
 	for x, test := range otpTests {
 		token, err := NewTokenFromBytes(test.token)
 		if err != nil {
-			t.Errorf("TestOtp test #%d failed: %v", x, err)
+			t.Errorf("TestOTP test #%d failed: %v", x, err)
 			continue
 		}
 		key := NewKey(test.key)
@@ -267,13 +267,13 @@ func TestOtp(t *testing.T) {
 
 		res, err := otp.Parse(key)
 		if err != nil {
-			t.Errorf("TestOtp test #%d failed: %v", x, err)
+			t.Errorf("TestOTP test #%d failed: %v", x, err)
 			continue
 		}
 		buf := res.Bytes()
 
 		if !bytes.Equal(test.token, buf) {
-			t.Errorf("TestOtp test #%d failed: got: %v want: %v",
+			t.Errorf("TestOTP test #%d failed: got: %v want: %v",
 				x, test.token, buf)
 			continue
 		}
