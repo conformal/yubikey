@@ -4,11 +4,11 @@ yubikey
 [![Build Status](https://travis-ci.org/conformal/yubikey.png?branch=master)]
 (https://travis-ci.org/conformal/yubikey)
 
-Package yubikey implements the [Yubico](http://www.yubico.com) [yubikey](http://www.yubico.com/products/yubikey-hardware/) API.
+Package yubikey implements the [Yubico](http://www.yubico.com) [YubiKey](http://www.yubico.com/products/yubikey-hardware/) API.
 
 ## Example
 
-The package needs to know the secret key of the Yubikey token; this
+The package needs to know the secret key of the YubiKey token; this
 may be stored as a string. For example, the secret key could be
 loaded from a file with:
 
@@ -42,7 +42,7 @@ func LoadSecretKey(filename string) (*Key, error) {
 }
 ```
 
-Then, you can pass the OTP string directly from the Yubikey to
+Then, you can pass the OTP string directly from the YubiKey to
 `ParseOTPString`:
 
 ```
@@ -61,10 +61,10 @@ Then, you can pass the OTP string directly from the Yubikey to
 	}
 ```
 
-It is important to keep track of the Yubikey's counter as well;
+It is important to keep track of the YubiKey's counter as well;
 this is a 16-bit unsigned integer. The counter value in the token
 should be checked against the last known counter value of the
-Yubikey to prevent replay attacks.
+YubiKey to prevent replay attacks.
 
 ## License
 
