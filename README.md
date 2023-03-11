@@ -1,8 +1,7 @@
 yubikey
 =======
 
-[![Build Status](https://travis-ci.org/conformal/yubikey.png?branch=master)]
-(https://travis-ci.org/conformal/yubikey)
+[![Build Status](https://travis-ci.org/conformal/yubikey.png?branch=master)](https://travis-ci.org/conformal/yubikey)
 
 Package yubikey implements the [Yubico](http://www.yubico.com) [YubiKey](http://www.yubico.com/products/yubikey-hardware/) API.
 
@@ -12,7 +11,7 @@ The package needs to know the secret key of the YubiKey token; this
 may be stored as a string. For example, the secret key could be
 loaded from a file with:
 
-```
+```go
 import (
 	"bytes"
 	"encoding/hex"
@@ -45,7 +44,7 @@ func LoadSecretKey(filename string) (*Key, error) {
 Then, you can pass the OTP string directly from the YubiKey to
 `ParseOTPString`:
 
-```
+```go
 	func GetToken(otpString string, priv *Key) (*Token, error) {
 		pub, otp, err := yubikey.ParseOTPString(otpString)
 		if err != nil {
